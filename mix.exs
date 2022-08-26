@@ -7,7 +7,12 @@ defmodule OpentelemetryFormatter.MixProject do
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      releases: [
+        my_instrumented_release: [
+          applications: [opentelemetry_exporter: :permanent, opentelemetry: :temporary]
+        ]
+      ]
     ]
   end
 
@@ -22,6 +27,7 @@ defmodule OpentelemetryFormatter.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:opentelemetry_exporter, "~> 1.0"},
       {:opentelemetry_api, "~> 1.0"},
       {:opentelemetry, "~> 1.0"}
       # {:dep_from_hexpm, "~> 0.3.0"},
