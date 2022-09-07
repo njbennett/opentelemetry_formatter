@@ -19,5 +19,11 @@ defmodule OtelGettingStartedTest do
       attributes: ^attributes
       )}
   end
+
+  test "makes giraffe noises" do
+     OtelGettingStarted.eat_acacia()
+
+     assert_receive { "mlmlmlm" }
+  end
 end
 
