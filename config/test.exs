@@ -6,9 +6,12 @@ config :opentelemetry_exporter,
  otlp_endpoint: "https://api.honeycomb.io:443",
  otlp_headers: [
          {"x-honeycomb-team", "0nOmkIaoRwFX7xGPlj1xNC"},
-         {"x-honeycomb-dataset", "experiments"}
+         {"x-honeycomb-dataset", "open-telemetry-formatter"}
        ]
 
 config :opentelemetry, :processors, [
   {:otel_batch_processor, %{scheduled_delay_ms: 1 }}
 ]
+
+config :opentelemetry, :resource, service: %{name: "opentelemetry_formatter"}
+
