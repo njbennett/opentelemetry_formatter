@@ -17,7 +17,7 @@ defmodule OtelGettingStartedTest do
     assert_receive {:span, span(
       name: "operation",
       attributes: ^attributes
-      )}
+      )}, 20_000
   end
 
   test "makes giraffe noises" do
