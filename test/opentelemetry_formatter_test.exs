@@ -39,7 +39,7 @@ defmodule OpentelemetryFormatterTest do
     assert_receive {:span, span(
       name: "test",
       attributes: ^attributes
-      )}
+      )}, 1_000
   end
 
   test "it returns status and config" do
