@@ -1,18 +1,14 @@
 defmodule OpentelemetryFormatter do
-  @moduledoc """
-  Documentation for `OpentelemetryFormatter`.
-  """
+  require OpenTelemetry.Tracer, as: Tracer
 
-  @doc """
-  Hello world.
+  def init(opts) do
+    { :ok, opts }
+  end
 
-  ## Examples
-
-      iex> OpentelemetryFormatter.hello()
+  def handle_event({ _event_type, test}) do
+    Tracer.with_span "test" do
+      Tracer.set_attributes(test)
       :world
-
-  """
-  def hello do
-    :world
+    end
   end
 end
