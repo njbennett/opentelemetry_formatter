@@ -28,15 +28,35 @@ defmodule OpentelemetryFormatterTest do
       time: 10000
     }
 
+    state = %{}
+
     struct = %{__struct__: ExUnit.Test, case: :test_case, logs: "logs", module: :module, name: :test_name, time: 10000}
 
     attributes = :otel_attributes.new(struct, 128, :infinity)
 
-    Formatter.handle_event({:test_started, test})
+    Formatter.handle_cast({:test_started, test}, state)
 
     assert_receive {:span, span(
       name: "test",
       attributes: ^attributes
       )}
+  end
+
+  test "it returns status and config" do
+    test = %ExUnit.Test{
+      case: :test_case,
+      logs: "logs",
+      module: :module,
+      name: :test_name,
+      state: {:failed, "failure"},
+      tags: %{tag: "tag"},
+      time: 10000
+    }
+
+    state = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:test_started, test}, state)
+
+    assert state == config
   end
 end

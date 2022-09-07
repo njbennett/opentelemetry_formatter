@@ -5,10 +5,10 @@ defmodule OpentelemetryFormatter do
     { :ok, opts }
   end
 
-  def handle_event({ _event_type, test}) do
+  def handle_cast({ _event_type, test}, state) do
     Tracer.with_span "test" do
       Tracer.set_attributes(test)
-      :world
+      { :noreply, state }
     end
   end
 end
