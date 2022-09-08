@@ -58,7 +58,7 @@ defmodule OpentelemetryFormatterTest do
 
     state = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:test_finished, test}, state)
+    {:noreply, config} = Formatter.handle_cast({:test_finished, test}, state)
 
     assert state == config
   end
@@ -67,7 +67,7 @@ defmodule OpentelemetryFormatterTest do
     state = %{}
     opts = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:suite_started, opts}, state)
+    {:noreply, config} = Formatter.handle_cast({:suite_started, opts}, state)
 
     assert state == config
   end
@@ -76,7 +76,7 @@ defmodule OpentelemetryFormatterTest do
     state = %{}
     opts = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:suite_finished, opts}, state)
+    {:noreply, config} = Formatter.handle_cast({:suite_finished, opts}, state)
 
     assert state == config
   end
@@ -85,7 +85,7 @@ defmodule OpentelemetryFormatterTest do
     state = %{}
     opts = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:case_started, opts}, state)
+    {:noreply, config} = Formatter.handle_cast({:case_started, opts}, state)
 
     assert state == config
   end
@@ -94,7 +94,7 @@ defmodule OpentelemetryFormatterTest do
     state = %{}
     module = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:case_finished, module}, state)
+    {:noreply, config} = Formatter.handle_cast({:case_finished, module}, state)
 
     assert state == config
   end
@@ -103,7 +103,7 @@ defmodule OpentelemetryFormatterTest do
     state = %{}
     module = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:module_started, module}, state)
+    {:noreply, config} = Formatter.handle_cast({:module_started, module}, state)
 
     assert state == config
   end
@@ -112,13 +112,14 @@ defmodule OpentelemetryFormatterTest do
     state = %{}
     module = %{}
 
-    {:noreply, config } = Formatter.handle_cast({:module_finished, module}, state)
+    {:noreply, config} = Formatter.handle_cast({:module_finished, module}, state)
 
     assert state == config
   end
 
   test "it returns status and config when it handles :test_started" do
     state = %{}
+
     test = %ExUnit.Test{
       case: :test_case,
       logs: "logs",
@@ -129,7 +130,7 @@ defmodule OpentelemetryFormatterTest do
       time: 10000
     }
 
-    {:noreply, config } = Formatter.handle_cast({:test_started, test}, state)
+    {:noreply, config} = Formatter.handle_cast({:test_started, test}, state)
 
     assert state == config
   end
