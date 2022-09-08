@@ -38,30 +38,76 @@ defmodule OpentelemetryFormatterTest do
 
     state = %{}
 
-    struct = %{__struct__: ExUnit.Test, case: :test_case, logs: "logs", module: :module, name: :test_name, time: 10000}
+    {:noreply, config } = Formatter.handle_cast({:test_finished, test}, state)
 
-    attributes = :otel_attributes.new(struct, 128, :infinity)
-
-    Formatter.handle_cast({:test_started, test}, state)
-
-    assert_receive {:span, span(
-      name: "test",
-      attributes: ^attributes
-      )}, 1_000
+    assert state == config
   end
 
-  test "it returns status and config" do
+  test "it returns status and config when it handles :suite_started" do
+    state = %{}
+    opts = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:suite_started, opts}, state)
+
+    assert state == config
+  end
+
+  test "it returns status and config when it handles :suite_finished" do
+    state = %{}
+    opts = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:suite_finished, opts}, state)
+
+    assert state == config
+  end
+
+  test "it returns status and config when it handles :case_started" do
+    state = %{}
+    opts = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:case_started, opts}, state)
+
+    assert state == config
+  end
+
+  test "it returns status and config when it handles :case_finished" do
+    state = %{}
+    module = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:case_finished, module}, state)
+
+    assert state == config
+  end
+
+  test "it returns status and config when it handles :module_started" do
+    state = %{}
+    module = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:module_started, module}, state)
+
+    assert state == config
+  end
+
+  test "it returns status and config when it handles :module_finished" do
+    state = %{}
+    module = %{}
+
+    {:noreply, config } = Formatter.handle_cast({:module_finished, module}, state)
+
+    assert state == config
+  end
+
+  test "it returns status and config when it handles :test_started" do
+    state = %{}
     test = %ExUnit.Test{
       case: :test_case,
       logs: "logs",
       module: :module,
       name: :test_name,
-      state: {:failed, "failure"},
+      state: nil,
       tags: %{tag: "tag"},
       time: 10000
     }
-
-    state = %{}
 
     {:noreply, config } = Formatter.handle_cast({:test_started, test}, state)
 
