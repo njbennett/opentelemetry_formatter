@@ -1,11 +1,21 @@
 defmodule OpentelemetryFormatterTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias OpentelemetryFormatter, as: Formatter
 
   require Record
   @fields Record.extract(:span, from: "deps/opentelemetry/include/otel_span.hrl")
   Record.defrecordp(:span, @fields)
+
+  setup do
+    :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
+    OpenTelemetry.get_tracer(:test_tracer)
+    on_exit(fn ->
+      exporter_config = Enum.into(Application.get_all_env(:opentelemetry_exporter), %{})
+      :otel_batch_processor.set_exporter(:opentelemetry_exporter, exporter_config)
+    end)
+  end
+
 
   test "init returns a config" do
     opts = %{}
@@ -14,9 +24,7 @@ defmodule OpentelemetryFormatterTest do
     assert config == expected_config
   end
 
-  test "it emits a span for a test" do
-    :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
-    OpenTelemetry.get_tracer(:test_tracer)
+  test "it emits a span for a test that finishes" do
 
     test = %ExUnit.Test{
       case: :test_case,
