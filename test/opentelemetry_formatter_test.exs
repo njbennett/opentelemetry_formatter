@@ -7,25 +7,45 @@ defmodule OpentelemetryFormatterTest do
   @fields Record.extract(:span, from: "deps/opentelemetry/include/otel_span.hrl")
   Record.defrecordp(:span, @fields)
 
-  setup do
-    :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
-    OpenTelemetry.get_tracer(:test_tracer)
-    on_exit(fn ->
-      exporter_config = Enum.into(Application.get_all_env(:opentelemetry_exporter), %{})
-      :otel_batch_processor.set_exporter(:opentelemetry_exporter, exporter_config)
-    end)
-  end
-
-
   test "init returns a config" do
     opts = %{}
     expected_config = opts
-    { :ok, config } = Formatter.init(opts)
+    {:ok, config} = Formatter.init(opts)
     assert config == expected_config
   end
 
-  test "it emits a span for a test that finishes" do
+  describe "emitting spans" do
+    setup do
+      :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
+      OpenTelemetry.get_tracer(:test_tracer)
 
+      on_exit(fn ->
+        exporter_config = Enum.into(Application.get_all_env(:opentelemetry_exporter), %{})
+        :otel_batch_processor.set_exporter(:opentelemetry_exporter, exporter_config)
+      end)
+    end
+
+    test "it emits a span for a test that finishes" do
+      test = %ExUnit.Test{
+        case: :test_case,
+        logs: "logs",
+        module: :module,
+        name: :test_name,
+        state: {:failed, "failure"},
+        tags: %{tag: "tag"},
+        time: 10000
+      }
+
+      state = %{}
+
+      Formatter.handle_cast({:test_finished, test}, state)
+
+      assert_receive {:span, span(name: "test")},
+                     1_000
+    end
+  end
+
+  test "it returns status and config when it handles :test_finished" do
     test = %ExUnit.Test{
       case: :test_case,
       logs: "logs",
