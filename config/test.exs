@@ -1,11 +1,13 @@
 import Config
 
+
+# use OTEL_EXPORTER_OTLP_TRACES_HEADERS=x-honeycomb-team=$HONEYCOMB_API_TOKEN to set the dataset
+
 config :opentelemetry_exporter,
  otlp_protocol: :http_protobuf,
  otlp_compression: :gzip,
  otlp_endpoint: "https://api.honeycomb.io:443",
  otlp_headers: [
-         {"x-honeycomb-team", "0nOmkIaoRwFX7xGPlj1xNC"},
          {"x-honeycomb-dataset", "open-telemetry-formatter"}
        ]
 
