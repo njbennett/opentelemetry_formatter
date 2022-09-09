@@ -2,6 +2,7 @@ defmodule OpentelemetryFormatterTest do
   use ExUnit.Case, async: false
 
   alias OpentelemetryFormatter, as: Formatter
+  require OpenTelemetry.Span, as: Span
 
   require Record
   @fields Record.extract(:span, from: "deps/opentelemetry/include/otel_span.hrl")
@@ -9,12 +10,14 @@ defmodule OpentelemetryFormatterTest do
 
   test "init returns a config" do
     opts = %{}
-    expected_config = opts
-    {:ok, config} = Formatter.init(opts)
-    assert config == expected_config
+    expected_state = %{
+      active_spans: %{}
+    }
+    {:ok, state} = Formatter.init(opts)
+    assert state == expected_state
   end
 
-  describe "emitting spans" do
+  describe "handling :test_finished" do
     setup do
       :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
       OpenTelemetry.get_tracer(:test_tracer)
@@ -26,7 +29,17 @@ defmodule OpentelemetryFormatterTest do
     end
 
     test "it emits a span for a test that finishes" do
-      test = %ExUnit.Test{
+      test_started = %ExUnit.Test{
+        case: :test_case,
+        logs: "logs",
+        module: :module,
+        name: :test_name,
+        state: nil,
+        tags: %{tag: "tag"},
+        time: 10000
+          }
+
+      test_finished = %ExUnit.Test{
         case: :test_case,
         logs: "logs",
         module: :module,
@@ -34,33 +47,49 @@ defmodule OpentelemetryFormatterTest do
         state: {:failed, "failure"},
         tags: %{tag: "tag"},
         time: 10000
-      }
+          }
 
-      state = %{}
+      {:ok, state} = Formatter.init({})
 
-      Formatter.handle_cast({:test_finished, test}, state)
+      {:noreply, state_with_ctx } = Formatter.handle_cast({:test_started, test_started}, state)
+
+      {:noreply, _final_state } = Formatter.handle_cast({:test_finished, test_finished}, state_with_ctx)
 
       assert_receive {:span, span(name: "test")},
                      1_000
     end
+
+    test "ends the span ctx" do
+      test_started = %ExUnit.Test{
+        case: :test_case,
+        logs: "logs",
+        module: :module,
+        name: :test_name,
+        state: nil,
+        tags: %{tag: "tag"},
+        time: 10000
+          }
+
+      test_finished = %ExUnit.Test{
+        case: :test_case,
+        logs: "logs",
+        module: :module,
+        name: :test_name,
+        state: {:failed, "failure"},
+        tags: %{tag: "tag"},
+        time: 10000
+          }
+
+      {:ok, state} = Formatter.init({})
+
+      {:noreply, state_with_ctx } = Formatter.handle_cast({:test_started, test_started}, state)
+
+      {:noreply, final_state } = Formatter.handle_cast({:test_finished, test_finished}, state_with_ctx)
+
+      %{active_spans: %{ test_name: span_ctx }} = final_state
+      refute Span.is_recording(span_ctx)
   end
 
-  test "it returns status and config when it handles :test_finished" do
-    test = %ExUnit.Test{
-      case: :test_case,
-      logs: "logs",
-      module: :module,
-      name: :test_name,
-      state: {:failed, "failure"},
-      tags: %{tag: "tag"},
-      time: 10000
-    }
-
-    state = %{}
-
-    {:noreply, config} = Formatter.handle_cast({:test_finished, test}, state)
-
-    assert state == config
   end
 
   test "it returns status and config when it handles :suite_started" do
@@ -117,8 +146,12 @@ defmodule OpentelemetryFormatterTest do
     assert state == config
   end
 
-  test "it returns status and config when it handles :test_started" do
-    state = %{}
+  test "when it starts a test it returns span context as part of state" do
+    state = %{
+      active_spans: %{
+        existing_test: :fake_span
+      }
+    }
 
     test = %ExUnit.Test{
       case: :test_case,
@@ -130,8 +163,31 @@ defmodule OpentelemetryFormatterTest do
       time: 10000
     }
 
-    {:noreply, config} = Formatter.handle_cast({:test_started, test}, state)
+      {:noreply, new_state} = Formatter.handle_cast({:test_started, test}, state)
 
-    assert state == config
+      %{active_spans: %{ test_name: span_ctx }} = new_state
+      assert Span.is_valid(span_ctx)
+    end
+
+  test "it adds new spans to existing context" do
+    state = %{
+      active_spans: %{
+        existing_test: :fake_span
+      }
+    }
+
+    test = %ExUnit.Test{
+      case: :test_case,
+      logs: "logs",
+      module: :module,
+      name: :test_name,
+      state: nil,
+      tags: %{tag: "tag"},
+      time: 10000
+    }
+
+      {:noreply, new_state} = Formatter.handle_cast({:test_started, test}, state)
+
+      assert new_state[:active_spans][:existing_test] == :fake_span
   end
 end
