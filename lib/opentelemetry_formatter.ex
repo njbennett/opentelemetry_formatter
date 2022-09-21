@@ -27,11 +27,16 @@ defmodule OpentelemetryFormatter do
   end
 
   def handle_cast({:suite_started, _opts}, state) do
-    {:noreply, state}
+    ctx = Tracer.start_span("suite", %{})
+    new_state = Map.put(state, :suite_ctx, ctx)
+    {:noreply, new_state}
   end
 
   def handle_cast({:suite_finished, _opts}, state) do
-    {:noreply, state}
+    ctx = Map.get(state, :suite_ctx)
+    ended_ctx = Span.end_span(ctx)
+    new_state = %{ state | suite_ctx: ended_ctx}
+    {:noreply, new_state}
   end
 
   def handle_cast({:case_started, _test_module}, state) do

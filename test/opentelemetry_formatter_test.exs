@@ -88,28 +88,41 @@ defmodule OpentelemetryFormatterTest do
 
       %{active_spans: %{ test_name: span_ctx }} = final_state
       refute Span.is_recording(span_ctx)
+    end
   end
 
+  describe "handling :suite_finished" do
+    setup do
+      :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
+      OpenTelemetry.get_tracer(:test_tracer)
+
+      on_exit(fn ->
+        exporter_config = Enum.into(Application.get_all_env(:opentelemetry_exporter), %{})
+        :otel_batch_processor.set_exporter(:opentelemetry_exporter, exporter_config)
+      end)
+    end
+
+    test "ends the span ctx" do
+      state = %{}
+      opts = %{}
+
+      {:noreply, state_with_ctx } = Formatter.handle_cast({:suite_started, opts}, state)
+
+      {:noreply, %{ suite_ctx: suite_ctx}} = Formatter.handle_cast({:suite_finished, opts}, state_with_ctx)
+
+      refute Span.is_recording(suite_ctx)
   end
 
-  test "it returns status and config when it handles :suite_started" do
+  test "it creates a suite_ctx when :suite_startd" do
     state = %{}
     opts = %{}
 
-    {:noreply, config} = Formatter.handle_cast({:suite_started, opts}, state)
+    {:noreply, %{ suite_ctx: suite_ctx}} = Formatter.handle_cast({:suite_started, opts}, state)
 
-    assert state == config
+    assert Span.is_valid(suite_ctx)
   end
 
-  test "it returns status and config when it handles :suite_finished" do
-    state = %{}
-    opts = %{}
-
-    {:noreply, config} = Formatter.handle_cast({:suite_finished, opts}, state)
-
-    assert state == config
   end
-
   test "it returns status and config when it handles :case_started" do
     state = %{}
     opts = %{}
