@@ -19,7 +19,7 @@ defmodule OpentelemetryFormatterTest do
 
   describe "handling :test_finished" do
     setup do
-      :otel_batch_processor.set_exporter(:otel_exporter_pid, self())
+      :otel_simple_processor.set_exporter(:otel_exporter_pid, self())
       OpenTelemetry.get_tracer(:test_tracer)
 
       on_exit(fn ->
