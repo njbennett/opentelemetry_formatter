@@ -89,6 +89,43 @@ defmodule OpentelemetryFormatterTest do
       %{active_spans: %{ test_name: span_ctx }} = final_state
       refute Span.is_recording(span_ctx)
     end
+
+    test "it starts test spans as children of the suite span" do
+      test_started = %ExUnit.Test{
+        case: :test_case,
+        logs: "logs",
+        module: :module,
+        name: :test_name,
+        state: nil,
+        tags: %{tag: "tag"},
+        time: 10000
+          }
+
+      test_finished = %ExUnit.Test{
+        case: :test_case,
+        logs: "logs",
+        module: :module,
+        name: :test_name,
+        state: {:failed, "failure"},
+        tags: %{tag: "tag"},
+        time: 10000
+          }
+
+      {:ok, state} = Formatter.init({})
+      opts = %{}
+
+      {:noreply, state_with_suite } = Formatter.handle_cast({:suite_started, opts}, state)
+
+      {:noreply, state_with_ctx } = Formatter.handle_cast({:test_started, test_started}, state_with_suite)
+
+      {:noreply, final_state } = Formatter.handle_cast({:test_finished, test_finished}, state_with_ctx)
+
+      %{ suite_ctx: suite_ctx} = state_with_suite
+
+      %{active_spans: %{ test_name: test_ctx }} = final_state
+
+      assert Span.trace_id(suite_ctx) == Span.trace_id(test_ctx)
+    end
   end
 
   describe "handling :suite_finished" do
@@ -111,7 +148,7 @@ defmodule OpentelemetryFormatterTest do
       {:noreply, %{ suite_ctx: suite_ctx}} = Formatter.handle_cast({:suite_finished, opts}, state_with_ctx)
 
       refute Span.is_recording(suite_ctx)
-  end
+    end
 
   test "it creates a suite_ctx when :suite_startd" do
     state = %{}

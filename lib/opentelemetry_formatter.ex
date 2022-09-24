@@ -7,6 +7,10 @@ defmodule OpentelemetryFormatter do
   end
 
   def handle_cast({:test_started, test}, state) do
+    suite_ctx = Map.get(state, :suite_ctx)
+    if suite_ctx do
+      Tracer.set_current_span(suite_ctx)
+    end
     ctx = Tracer.start_span("test", %{})
     active_spans = state[:active_spans]
     new_active_spans = Map.put(active_spans, test.name, ctx)
