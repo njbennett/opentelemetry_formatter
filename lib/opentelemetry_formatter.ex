@@ -12,8 +12,11 @@ defmodule OpentelemetryFormatter do
       Tracer.set_current_span(suite_ctx)
     end
     ctx = Tracer.start_span("test", %{})
+    Tracer.set_current_span(ctx)
+    Span.set_attribute(ctx, :test_name, test.name)
+
     active_spans = state[:active_spans]
-    new_active_spans = Map.put(active_spans, test.name, ctx)
+    new_active_spans = Map.put(active_spans, test.name, Tracer.current_span_ctx())
 
     state_with_ctx = %{state | active_spans: new_active_spans }
     {:noreply, state_with_ctx}
