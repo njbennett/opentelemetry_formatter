@@ -1,6 +1,7 @@
 import Config
 
-# use OTEL_EXPORTER_OTLP_TRACES_HEADERS=x-honeycomb-team=$HONEYCOMB_API_TOKEN to set the dataset
+# Print only warnings and errors during test
+config :logger, level: :warn
 
 config :opentelemetry_exporter,
   otlp_protocol: :http_protobuf,
