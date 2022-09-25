@@ -15,7 +15,8 @@ defmodule OpenTelemetryFormatter do
 
     ctx = Tracer.start_span("test", %{})
     Tracer.set_current_span(ctx)
-    Span.set_attribute(ctx, :test_name, test.name)
+    attributes = OpenTelemetryFormatter.Converter.to_list(test)
+    Span.set_attributes(ctx, attributes)
 
     active_spans = state[:active_spans]
     new_active_spans = Map.put(active_spans, test.name, Tracer.current_span_ctx())

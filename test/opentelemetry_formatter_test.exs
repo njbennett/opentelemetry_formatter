@@ -58,7 +58,7 @@ defmodule OpenTelemetryFormatterTest do
       {:noreply, _final_state} =
         Formatter.handle_cast({:test_finished, test_finished}, state_with_ctx)
 
-      attributes = :otel_attributes.new([{:test_name, :test_name}], 128, :infinity)
+      attributes = :otel_attributes.new(OpenTelemetryFormatter.Converter.to_list(test_finished), 128, :infinity)
 
       assert_receive {:span,
                       span(
