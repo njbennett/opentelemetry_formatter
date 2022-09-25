@@ -1,4 +1,4 @@
-# OpentelemetryFormatter
+# OpenTelemetryFormatter
 
 **TODO: Add description**
 

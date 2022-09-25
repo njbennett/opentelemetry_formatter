@@ -1,7 +1,7 @@
-defmodule OpentelemetryFormatterTest do
+defmodule OpenTelemetryFormatterTest do
   use ExUnit.Case, async: false
 
-  alias OpentelemetryFormatter, as: Formatter
+  alias OpenTelemetryFormatter, as: Formatter
   require OpenTelemetry.Span, as: Span
 
   require Record

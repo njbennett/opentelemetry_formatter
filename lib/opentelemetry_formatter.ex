@@ -1,4 +1,4 @@
-defmodule OpentelemetryFormatter do
+defmodule OpenTelemetryFormatter do
   require OpenTelemetry.Tracer, as: Tracer
   require OpenTelemetry.Span, as: Span
 
