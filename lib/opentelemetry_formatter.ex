@@ -1,4 +1,4 @@
-defmodule OpenTelemetryFormatter do
+defmodule(OpenTelemetryFormatter) do
   require OpenTelemetry.Tracer, as: Tracer
   require OpenTelemetry.Span, as: Span
 
@@ -28,6 +28,8 @@ defmodule OpenTelemetryFormatter do
   def handle_cast({:test_finished, test}, state) do
     test_name = test.name
     %{active_spans: %{^test_name => span_ctx}} = state
+    attributes = OpenTelemetryFormatter.Converter.to_list(test)
+    Span.set_attributes(span_ctx, attributes)
     ended_ctx = Span.end_span(span_ctx)
     active_spans = state[:active_spans]
     new_active_spans = Map.put(active_spans, test.name, ended_ctx)

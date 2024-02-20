@@ -19,3 +19,16 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/opentelemetry_formatter>.
 
+To get this to actually run you'll need to configure your OpenTelemetry credentials,
+and add the OpenTelemetry releases to your application, which will look something like:
+
+```elixir
+def project do
+  # everything else in this section of mix.exs
+releases: [
+  my_instrumented_releases: [
+    applications: [opentelemetry_exporter: :permanent, opentelemetry: :temporary]
+  ]
+]
+end
+```

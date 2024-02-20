@@ -58,7 +58,12 @@ defmodule OpenTelemetryFormatterTest do
       {:noreply, _final_state} =
         Formatter.handle_cast({:test_finished, test_finished}, state_with_ctx)
 
-      attributes = :otel_attributes.new(OpenTelemetryFormatter.Converter.to_list(test_finished), 128, :infinity)
+      attributes =
+        :otel_attributes.new(
+          OpenTelemetryFormatter.Converter.to_list(test_finished),
+          128,
+          :infinity
+        )
 
       assert_receive {:span,
                       span(
@@ -163,7 +168,7 @@ defmodule OpenTelemetryFormatterTest do
       refute Span.is_recording(suite_ctx)
     end
 
-    test "it creates a suite_ctx when :suite_startd" do
+    test "it creates a suite_ctx when :suite_started" do
       state = %{}
       opts = %{}
 

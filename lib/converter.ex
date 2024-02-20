@@ -12,8 +12,28 @@ defmodule OpenTelemetryFormatter.Converter do
     if test == %ExUnit.Test{} do
       []
     else
-      [{"test.name", test.name}]
+      if test.state == nil do
+        [
+          {"test.name", test.name},
+          {"test.status", :success},
+          {"test.succeeded?", 1}
+        ]
+      else
+        {state, _} = test.state
+
+        success =
+          if state == :failed do
+            0
+          else
+            1
+          end
+
+        [
+          {"test.name", test.name},
+          {"test.status", state},
+          {"test.succeeded?", success}
+        ]
+      end
     end
   end
-
 end
