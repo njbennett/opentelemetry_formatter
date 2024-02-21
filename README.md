@@ -22,7 +22,7 @@ Then configure ExUnit to use it by including it in the list of formatters:
 ExUnit.configure(formatters: [OpenTelemetryFormatter, ExUnit.CLIFormatter])
 ```
 
-# Configuring OpenTelemetry
+## Configuring OpenTelemetry
 
 To actually emit spans you'll need to include the OpenTelemetry exporter
 in your project as a release,
