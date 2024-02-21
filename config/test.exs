@@ -10,8 +10,7 @@ config :opentelemetry, :processors,
     exporter:
       {:opentelemetry_exporter,
        %{
-         endpoints: ["https://api.honeycomb.io:443"],
-         headers: [{"x-honeycoomb-dataset", "elderflower-tests"}]
+         endpoints: ["https://api.honeycomb.io:443"]
        }}
   }
 
